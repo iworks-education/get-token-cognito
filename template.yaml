@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+    study-datalake
+    Rest API to manage a Data Lake of study links
+
+Globals:
+    Function:
+        Timeout: 100
+        MemorySize: 1536
+        
+Resources:
+
+  APIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      EndpointConfiguration: REGIONAL
+      
+  GetTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+     CodeUri: target/get-token-cognito-1.0.0-SNAPSHOT-jar-with-dependencies.jar
+     Handler: br.com.iwe.handler.GetTokenHandler::handleRequest
+     Runtime: java8
+     Tracing: Active
+     Policies:
+       - AmazonCognitoPowerUser
+     Events:
+       CreateStudyRecord:
+         Type: Api
+         Properties:
+           RestApiId:
+              Ref: APIGateway
+           Path: /get-token
+           Method: get
+
+Outputs:
+
+    GetTokenFunction:
+      Description: "GetTokenFunction Lambda Function ARN"
+      Value: !GetAtt GetTokenFunction.Arn
